@@ -67,7 +67,7 @@ fn main(){
                             .map(|x: &str| toi32(x))
                             .collect();
         let safe:bool = step_difference(v.clone()); // clone has runtime cost, acoided by rusticians
-        sum += safe as i32;
+        sum += safe as i32; 
         println!("Data: {:?} -> {:?}", v, safe); 
     }
     println!("Number of safe reports: {:?}", sum);
