@@ -1,11 +1,19 @@
-// absolute distance, non unique accepted 
-
+/*
+Day 1: Advent of Code 2024
+- select a pair of ints based on the smallest values in 2 columns
+- absolute distance between a pair
+- non unique entries in column allowed 
+- Next iteration pick the next smallest value in the column
+*/
 use std::{
     fs::File, 
     io::{prelude::*, BufReader},
 };
 
 fn toi32(s: &str) -> i32 {
+    /*
+    Convert string to i32
+    */
     s.parse::<i32>().unwrap() 
 }
 
@@ -19,7 +27,7 @@ fn main(){
     println!("Contents of file: {:?}", input);
 
     let reader = BufReader::new(input);
-    let data: Vec<_> = reader.lines()
+    let data: Vec<String> = reader.lines()
                              .map(|result| result.unwrap())  
                              .take_while(|result| !result.is_empty())
                              .collect();
@@ -28,14 +36,18 @@ fn main(){
     
     // make a vector of the first column of int type and sort
     let mut col1: Vec<i32> = data.iter().map(|x| { 
-        let  v: Vec<i32> = x.split_whitespace().map(|x| toi32(x)).collect();
-        v[0]
+        let  v: Vec<i32> = x.split_whitespace()
+                            .map(|x: &str| toi32(x))
+                            .collect();
+        v[0] // return first index
     }).collect();
     col1.sort();
 
     // make a vector of the second column of int type and sort
     let mut col2: Vec<i32> = data.iter().map(|x| { 
-        let  v: Vec<i32> = x.split_whitespace().map(|x| toi32(x)).collect();
+        let  v: Vec<i32> = x.split_whitespace()
+                            .map(|x: &str| toi32(x))
+                            .collect();
         v[1]
     }).collect();
     col2.sort();
@@ -43,10 +55,10 @@ fn main(){
     println!("Column 1: {:?}", col1.len()); 
     println!("Column 2: {:?}", col2.len());
 
-    let _val = (col1.len() == col2.len()) || panic!("Columns are not of equal length");
+    let _val: bool = (col1.len() == col2.len()) || panic!("Columns are not of equal length");
 
-
-    let mut sum = 0;
+    // logic for problem statement
+    let mut sum: i32 = 0;
     for i in 0..col1.len() { 
         sum += (col1[i] - col2[i]).abs();
     }   
