@@ -10,6 +10,21 @@ use std::fs::File;
 use std::io::{BufReader, BufRead};
 use regex::Regex;
 
+fn re_counter(s: &str) -> i32 {
+    let re = Regex::new(r"XMAS").unwrap();
+    let rer = Regex::new(r"SAMX").unwrap();
+    let mut count: i32 = 0; 
+    if re.is_match(s) {
+        count += 1;
+        println!("Match: {:?} (fwd)", s);
+    }
+    if rer.is_match(s) {
+        count += 1;
+        println!("Match: {:?} (rev)", s);
+    }
+    count
+}
+
 fn main(){  
     let input_result = File::open("data/day4_a.txt");
     let input = match input_result {
@@ -19,47 +34,65 @@ fn main(){
     println!("Contents of file: {:?}", input);
     
     let reader = BufReader::new(input);
-    let re = Regex::new(r"XMAS").unwrap();
-    let rer = Regex::new(r"SAMX").unwrap();
     
     let window: usize = 4;
     // re.find_iter()
-    let mut count: i32 = 0; 
-    // a multidimensional vector
-    let mut a: Vec<Vec<char>> = Vec::new(); 
-    for line in reader.lines(){ 
-        a.push(line.unwrap().chars().collect());
+    let mut count: i32 = 0;  
+    let mut a: Vec<Vec<char>> = Vec::new();
+    for line in reader.lines(){  
+        let line: Vec<char> = line.unwrap().chars().collect();
+        println!("Line: {:?}", line.clone());
+        a.push(line); 
     } 
-    println!("Text: {:?}", a);
-    let mut i: usize = 0;
-    let mut j: usize = 0;
-    let mut max_j=0;
-    let mut offset_j: usize = 0; 
-    let mut offset_i: usize = 0;
+    let max_len= a.len();
+    let line_len= a[0].len();
  
-    for i in 0..a.len() {
-            for offset_j in 0..a[i].len(){ 
-                let mut s: String = String::new();
-                max_j = a[i].len() - window;
-                if max_j < offset_j {
-                    break;
-                }
-                // look for substrings of length window
-                for j in offset_j..(window + offset_j) {
-                    s.push(a[i][j]);
-                }
-                if re.is_match(&s) {
-                    println!("Matched: {:?} at i: {:?} j: {:?} offset_j: {:?}", s, i, j, offset_j);
-                    count += 1;
-                }
-                if rer.is_match(&s) {
-                    println!("Matched: {:?} at i: {:?} j: {:?} offset_j: {:?}", s, i, j, offset_j);
-                    count += 1;
-                }
-            }
-    } 
-    println!("incl. Horizontal Count: {:?}", count); 
+    println!("Text of length: {:?}", max_len );  
+    println!("Line Length: {:?}", line_len);
 
+    for i in 0..max_len {
+        for j in 0..line_len {
+            // right
+            if j + window <= line_len {
+                let mut s: String = String::new();
+                for k in 0..window {
+                    s.push(a[i][j+k]);
+                }
+                println!("String (right): {:?}", s);
+                count += re_counter(&s);
+            }
+            // down
+            if i + window <= max_len {
+                let mut s: String = String::new();
+                for k in 0..window {
+                    s.push(a[i+k][j]);
+                }
+                println!("String (down): {:?}", s);
+                count += re_counter(&s);
+            }
+            // diagonal right
+            if i + window <= max_len && j + window <= line_len {
+                let mut s: String = String::new();
+                for k in 0..window {
+                    s.push(a[i+k][j+k]);
+                }
+                println!("String (diagonal right): {:?}", s);
+                count += re_counter(&s);
+            }
+            // anti-diagonal left
+            if i + window <= max_len && j + 1 >= window {
+                let mut s: String = String::new();
+                for k in 0..window {
+                    s.push(a[i+k][j-k]);
+                }
+                println!("String (anti-diagonal): {:?}", s);
+                count += re_counter(&s);
+            }
+        }
+        println!("End of line: {:?}", i);
+
+    }
+    println!("Count: {:?}", count);
 }
 
 
