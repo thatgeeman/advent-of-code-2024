@@ -13,55 +13,77 @@
 use std::{
     fs::File,
     io::{prelude::*, BufReader},
-};
-use regex::{Regex, Match};
- 
- #[derive(Debug)]
-struct Node <T>{ // type T
-    cur: T,
-    next: Option<Box<Node<T>>> //smart pointer and Optional 
-    // https://www.youtube.com/watch?v=2q1AzGUwL7M&ab_channel=CSHonors%40Illinois
-}
+    collections::{HashSet, HashMap}, 
+}; 
+use regex::Regex;
 
-impl<T> Node<T> {
-    fn set_next(&mut self, next: Node<T>) {
-        self.next = Some(Box::new(next));
-    }
-}
 
 fn main(){ 
-
+    
     let input_result = File::open("data/day5_a.txt");
     let input = match input_result {
         Ok(file) => file,
         Err(error) => panic!("Problem opening the file: {:?}", error),
     };
     println!("Contents of file: {:?}", input);
-
-    let reader = BufReader::new(input);
-    let mut ln: i32 = 0;  
-    let mut node: Node<i32> = Node {cur: 0, next: None};
-    for line in reader.lines() {
+    let mut node_items: HashSet<(i32, i32)> = HashSet::new();
+    let mut reader = BufReader::new(input);   
+    let mut order: Vec<Vec<i32>> = Vec::new();
+    let re = Regex::new(r"(\d{2})").unwrap(); // find the groups of digits
+    let re2 = Regex::new(r"\d+").unwrap(); // for order
+    let mut switch = false;
+    for line in reader.by_ref().lines() {
         let line: String = line.unwrap(); 
-        if line.is_empty() {
-            break;
+        if line.is_empty() { 
+            switch = true;
+            continue;
         }
-        let re = Regex::new(r"(\d{2})").unwrap(); // find the groups of digits
-        let mut re_iter = re.find_iter(&line);
-        let child = re_iter.next().unwrap().as_str();
-        let parent = re_iter.next().unwrap().as_str();
-        if ln == 0 {
-            node = Node {cur: parent.parse::<i32>().unwrap(), next: None}; 
-            node.set_next(Node {cur: child.parse::<i32>().unwrap(), next: None});
+        if !switch {
+            // read the position
+            let mut re_iter = re.find_iter(&line);
+            let next = re_iter.next().unwrap().as_str().parse::<i32>().unwrap();
+            let prev = re_iter.next().unwrap().as_str().parse::<i32>().unwrap();  
+            
+            // store the parent and child nodes 
+            node_items.insert((next, prev)); 
         } else {
-            println!("Child: {:?}, Parent: {:?}", child, parent);
-            // TODO
-            node.set_next(Node {cur: child.parse::<i32>().unwrap(), next: None});
-            node.set_next(Node {cur: parent.parse::<i32>().unwrap(), next: None});
+            // stop reading the position and start reading the order
+            let matches: Vec<i32> = re2.find_iter(&line)
+                                        .map(|mat| mat.as_str().parse::<i32>().unwrap())
+                                        .collect();
+            if matches.len()>0 {
+                order.push(matches);
+            }
         }
-        ln += 1;  
+    }
     
-    } 
-    //parse the linked list 
-     
+    println!("Order: {:?}", order);
+    println!("Node Items: {:?}", node_items);
+    let mut sum = 0;
+    for o in order.iter() { // o is a vec 
+        if check_order(o, &node_items) {  
+            println!("update: {:?} is correct", o);
+            let mid_val_index = if o.len() % 2 == 0 {
+                o.len() / 2
+            } else {
+                (o.len() - 1) / 2
+            };
+            println!("mid value: {:?}", o[mid_val_index]);
+            sum += o[mid_val_index];
+        }
+    }
+    println!("Sum: {:?}", sum);
+} 
+
+fn check_order(order: &Vec<i32>, rules: &HashSet<(i32, i32)>) -> bool {
+    let map: HashMap<i32, usize> = order.iter().enumerate().map(|(i, &page)| (page, i)).collect();
+
+    for &(x, y) in rules {
+        if let (Some(&pos_x), Some(&pos_y)) = (map.get(&x), map.get(&y)) {
+            if pos_x >= pos_y {
+                return false;
+            }
+        }
+    }
+    true
 }
