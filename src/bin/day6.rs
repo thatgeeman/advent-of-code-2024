@@ -1,5 +1,9 @@
 /*
-
+- navigate the maze 
+- if facing a #, turn 90 degrees to the right
+- otherwise keep moving in that direction
+- stop when edge of maze is reached
+- count number of steps taken
 */
 
 use std::{
