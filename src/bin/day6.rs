@@ -9,10 +9,8 @@
 use std::{
     fs::File,
     io::{prelude::*, BufReader},
-    collections::{HashSet, HashMap}, 
-}; 
-use regex::Regex;
-
+    collections::HashSet, 
+};  
 
 fn main(){ 
     
