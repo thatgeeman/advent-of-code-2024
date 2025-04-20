@@ -18,6 +18,9 @@ fn main(){
         Err(error) => panic!("Problem opening the file: {:?}", error),
     };
     println!("Contents of file: {:?}", input);
-    let mut reader = BufReader::new(input);   
-    
+    let reader = BufReader::new(input);   
+    let line = String::new();
+    // reader.read_line(&mut line).unwrap(); 
+    // println!("Line: {}", line);
+    // println!("Length of Line: {}", line.len());
 }
